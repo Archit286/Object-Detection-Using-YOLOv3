@@ -1,10 +1,14 @@
 import cv2 as cv
 import numpy as np
 import time
+from gpiozero import Buzzer, Servo
+
+bz = Buzzer(3)
+servo = Servo(4)
 
 WHITE = (255, 255, 255)
 img = None
-frame = None
+img0 = None
 outputs = None
 count = 1
 
@@ -23,12 +27,11 @@ ln = net.getLayerNames()
 ln = [ln[i - 1] for i in net.getUnconnectedOutLayers()]
 
 
-def load_image():
-    global img, frame, outputs, ln, count
+def load_image(path):
+    global img, img0, outputs, ln, count
 
-    print(count)
-
-    img = frame.copy()
+    img0 = cv.imread(path)
+    img = img0.copy()
 
     blob = cv.dnn.blobFromImage(
         img, 1 / 255.0, (416, 416), swapRB=True, crop=False)
@@ -48,10 +51,13 @@ def load_image():
 
 
 def post_process(img, outputs, conf):
+    global bz
+
     H, W = img.shape[:2]
 
     classIDs = []
     objects = []
+    common = []
 
     for output in outputs:
         scores = output[5:]
@@ -68,6 +74,7 @@ def post_process(img, outputs, conf):
 
     if(len(common)):
         # Raise Alarm
+        bz.on()
         print("ALARM")
 
 
@@ -77,6 +84,8 @@ cap.set(4, 480)
 
 while True:
     t0 = time.time()
+    val = -10
+    add = 2
 
     frame = None
     success, frame = cap.read()
@@ -86,8 +95,17 @@ while True:
         print('Error in Camera')  # For debugging purposes
         continue
 
+    servo.value = val/10.0
+
     while(time.time()-t0 < 10):
         continue
+
+    bz.off()
+    val += add
+    print(val)
+
+    if(val == 10 or val == -10):
+        add *= -1
 
     print('time taken:   ')
     print(time.time()-t0)

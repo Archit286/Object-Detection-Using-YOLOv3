@@ -4,9 +4,8 @@ import time
 
 WHITE = (255, 255, 255)
 img = None
-frame = None
+img0 = None
 outputs = None
-count = 1
 
 # Read Class Names for detection
 classes = open('coco.names').read().strip().split('\n')
@@ -23,12 +22,11 @@ ln = net.getLayerNames()
 ln = [ln[i - 1] for i in net.getUnconnectedOutLayers()]
 
 
-def load_image():
-    global img, frame, outputs, ln, count
+def load_image(path):
+    global img, img0, outputs, ln
 
-    print(count)
-
-    img = frame.copy()
+    img0 = cv.imread(path)
+    img = img0.copy()
 
     blob = cv.dnn.blobFromImage(
         img, 1 / 255.0, (416, 416), swapRB=True, crop=False)
@@ -42,9 +40,6 @@ def load_image():
     outputs = np.vstack(outputs)
 
     post_process(img, outputs, 0.2)
-    cv.imwrite('./result/r{0}.jpg'.format(str(count)), frame)
-    count += 1
-    cv.waitKey(0)
 
 
 def post_process(img, outputs, conf):
@@ -52,6 +47,7 @@ def post_process(img, outputs, conf):
 
     classIDs = []
     objects = []
+    common = []
 
     for output in outputs:
         scores = output[5:]
@@ -71,20 +67,10 @@ def post_process(img, outputs, conf):
         print("ALARM")
 
 
-cap = cv.VideoCapture(0)
-cap.set(3, 640)
-cap.set(4, 480)
-
-while True:
+for j in range(1, 26):
     t0 = time.time()
-
-    frame = None
-    success, frame = cap.read()
-    if success:
-        load_image()
-    else:
-        print('Error in Camera')  # For debugging purposes
-        continue
+    print(j)
+    load_image('test/s'+str(j)+'.jpg')
 
     while(time.time()-t0 < 10):
         continue
