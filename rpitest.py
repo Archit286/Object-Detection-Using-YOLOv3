@@ -23,16 +23,17 @@ colors = np.random.randint(0, 255, size=(len(classes), 3), dtype='uint8')
 net = cv.dnn.readNet('yolov3.cfg', 'yolov3.weights')
 net.setPreferableBackend(cv.dnn.DNN_BACKEND_OPENCV)
 
-ln = net.getLayerNames()
-ln = [ln[i[0] - 1] for i in net.getUnconnectedOutLayers()]
+ln2 = net.getLayerNames()
+ln = []
+for i in net.getUnconnectedOutLayers():
+    ln.append(ln2[i - 1])
 
 
-def load_image():
-    global img, frame, outputs, ln, count
+def load_image(path):
+    global img, img0, outputs, ln, count
 
-    print(count)
-
-    img = frame.copy()
+    img0 = cv.imread(path)
+    img = img0.copy()
 
     blob = cv.dnn.blobFromImage(
         img, 1 / 255.0, (416, 416), swapRB=True, crop=False)
@@ -48,6 +49,7 @@ def load_image():
     post_process(img, outputs, 0.2)
     cv.imwrite('./result/r{0}.jpg'.format(str(count)), frame)
     count += 1
+    cv.waitKey(0)
 
 
 def post_process(img, outputs, conf):
@@ -97,7 +99,7 @@ while True:
 
     servo.value = val/10.0
 
-    while(time.time()-t0 < 20):
+    while(time.time()-t0 < 10):
         continue
 
     bz.off()

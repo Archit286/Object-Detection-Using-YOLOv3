@@ -18,8 +18,10 @@ colors = np.random.randint(0, 255, size=(len(classes), 3), dtype='uint8')
 net = cv.dnn.readNet('yolov3.cfg', 'yolov3.weights')
 net.setPreferableBackend(cv.dnn.DNN_BACKEND_OPENCV)
 
-ln = net.getLayerNames()
-ln = [ln[i[0] - 1] for i in net.getUnconnectedOutLayers()]
+ln2 = net.getLayerNames()
+ln = []
+for i in net.getUnconnectedOutLayers():
+    ln.append(ln2[i - 1])
 
 
 def load_image(path):
@@ -72,7 +74,7 @@ for j in range(1, 26):
     print(j)
     load_image('test/s'+str(j)+'.jpg')
 
-    while(time.time()-t0 < 20):
+    while(time.time()-t0 < 10):
         continue
 
     print('time taken:   ')
