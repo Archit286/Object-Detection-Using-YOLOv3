@@ -1,11 +1,16 @@
 import cv2 as cv
 import numpy as np
 import time
+from gpiozero import Buzzer, Servo
+
+bz = Buzzer(3)
+servo = Servo(4)
 
 WHITE = (255, 255, 255)
 img = None
 img0 = None
 outputs = None
+count = 1
 
 # Read Class Names for detection
 classes = open('coco.names').read().strip().split('\n')
@@ -19,14 +24,15 @@ net = cv.dnn.readNet('yolov3.cfg', 'yolov3.weights')
 net.setPreferableBackend(cv.dnn.DNN_BACKEND_OPENCV)
 
 ln = net.getLayerNames()
-ln = [ln[i - 1] for i in net.getUnconnectedOutLayers()]
+ln = [ln[i[0] - 1] for i in net.getUnconnectedOutLayers()]
 
 
-def load_image(path):
-    global img, img0, outputs, ln
+def load_image():
+    global img, frame, outputs, ln, count
 
-    img0 = cv.imread(path)
-    img = img0.copy()
+    print(count)
+
+    img = frame.copy()
 
     blob = cv.dnn.blobFromImage(
         img, 1 / 255.0, (416, 416), swapRB=True, crop=False)
@@ -43,6 +49,8 @@ def load_image(path):
 
 
 def post_process(img, outputs, conf):
+    global bz
+
     H, W = img.shape[:2]
 
     classIDs = []
@@ -64,9 +72,37 @@ def post_process(img, outputs, conf):
 
     if(len(common)):
         # Raise Alarm
+        bz.on()
         print("ALARM")
 
 
-for j in range(1, 26):
-    print(j)
-    load_image('test/s'+str(j)+'.jpg')
+cap = cv.VideoCapture(0)
+cap.set(3, 640)
+cap.set(4, 480)
+
+while True:
+    t0 = time.time()
+    val = -10
+    add = 2
+
+    frame = None
+    success, frame = cap.read()
+    if success:
+        load_image()
+    else:
+        print('Error in Camera')  # For debugging purposes
+        continue
+
+    servo.value = val/10.0
+
+    while(time.time()-t0 < 20):
+        continue
+
+    bz.off()
+    val += add
+
+    if(val == 10 or val == -10):
+        add *= -1
+
+    print('time taken:   ')
+    print(time.time()-t0)

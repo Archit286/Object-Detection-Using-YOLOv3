@@ -20,7 +20,7 @@ net = cv.dnn.readNet('yolov3.cfg', 'yolov3.weights')
 net.setPreferableBackend(cv.dnn.DNN_BACKEND_OPENCV)
 
 ln = net.getLayerNames()
-ln = [ln[i - 1] for i in net.getUnconnectedOutLayers()]
+ln = [ln[i[0] - 1] for i in net.getUnconnectedOutLayers()]
 
 
 def load_image():
@@ -76,7 +76,6 @@ cap.set(3, 640)
 cap.set(4, 480)
 
 while True:
-    t0 = time.time()
 
     frame = None
     success, frame = cap.read()
@@ -85,9 +84,3 @@ while True:
     else:
         print('Error in Camera')  # For debugging purposes
         continue
-
-    while(time.time()-t0 < 10):
-        continue
-
-    print('time taken:   ')
-    print(time.time()-t0)
