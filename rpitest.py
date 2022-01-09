@@ -23,8 +23,10 @@ colors = np.random.randint(0, 255, size=(len(classes), 3), dtype='uint8')
 net = cv.dnn.readNet('yolov3.cfg', 'yolov3.weights')
 net.setPreferableBackend(cv.dnn.DNN_BACKEND_OPENCV)
 
-ln = net.getLayerNames()
-ln = [ln[i - 1] for i in net.getUnconnectedOutLayers()]
+ln2 = net.getLayerNames()
+ln = []
+for i in net.getUnconnectedOutLayers():
+    ln.append(ln2[i - 1])
 
 
 def load_image(path):
